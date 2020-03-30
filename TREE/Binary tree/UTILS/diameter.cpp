@@ -185,6 +185,112 @@ void print_pattern(btreenode* bt,int width)
 }
 
 
+void diameter_traverse(btreenode* root)
+{
+	typedef pair<int, int> pii;
+	typedef pair<btreenode*, pii> pbt;
+	
+	stack<pbt> st_lchild, st_rchild;
+	int level, width;
+	level = 1;
+	width = 0;
+	pii p = make_pair(level, width);
+	pbt pb = make_pair(root, p);
+	st_lchild.push(pb);
+	bool lchild, rchild;
+	lchild = true;
+	rchild = false;
+	int min_width, max_width, max_level, max_diff;
+	min_width = INT_MAX;
+	max_width = max_diff = INT_MIN;
+	max_level = level;
+	stack<pbt> st;
+	
+
+	while(st_lchild.empty() == false || st_rchild.empty() == false) {
+		
+		if (lchild && st_lchild.empty() == false) {
+			btreenode* elem = st_lchild.top().first;
+			width = st_lchild.top().second.second;
+			st_lchild.pop();
+			cout << elem->data << " ";
+			if (elem->rchild) {
+				
+				st_rchild.push(make_pair(elem->rchild, make_pair(level, width + 1)));
+				if (width + 1 > max_width) {
+					max_width = width + 1;
+				}
+			}
+			if (elem->lchild) {
+				st_rchild.push(make_pair(elem->lchild, make_pair(level, width - 1)));
+				if (width - 1 < min_width) {
+					min_width = width - 1;
+				}
+			}
+			if (st_lchild.empty()) {
+				if (st.empty()) {
+					st = st_rchild;
+					max_level = level;
+					max_diff = abs (max_width - min_width);
+				} else if (max_diff < abs(max_width - min_width)){
+					st = st_rchild;
+					max_level = level;
+					max_diff = abs (max_width - min_width);
+				}
+				level += 1;
+				lchild = false;
+				rchild = true;
+				min_width = INT_MAX;
+				max_width = INT_MIN;
+			}
+		} else if (rchild && st_rchild.empty() == false) {
+			
+			btreenode* elem = st_rchild.top().first;
+			width = st_rchild.top().second.second;
+			st_rchild.pop();
+			cout << elem->data << " ";
+			if (elem->lchild) {
+				st_lchild.push(make_pair(elem->lchild, make_pair(level, width - 1)));
+				if (width - 1 < min_width) {
+					min_width = width - 1;
+				}
+			}
+			if (elem->rchild) {
+				st_lchild.push(make_pair(elem->rchild, make_pair(level, width + 1)));
+				if (width + 1 > max_width) {
+					max_width = width + 1;
+				}
+			}
+			if (st_rchild.empty()) {
+				if (st.empty()) {
+					st = st_lchild;
+					max_level = level;
+					max_diff = abs (max_width - min_width);
+				} else if (max_diff < abs(max_width - min_width)){
+					st = st_lchild;
+					max_level = level;
+					max_diff = abs (max_width - min_width);
+				}
+				level += 1;
+				rchild = false;
+				lchild = true;
+				min_width = INT_MAX;
+				max_width = INT_MIN;
+			}
+		}
+	}
+	cout << endl;
+
+	cout << "Diameter at level: " << max_level << " with a length: " << st.size() << endl;
+	while (st.empty() == false) {
+		cout << st.top().first->data << " ";
+		st.pop();
+	}
+
+	cout << endl;
+
+}
+
 int main()
 {
         btreenode *bt,**bt_h;
@@ -194,7 +300,7 @@ int main()
         fflush(stdin);
         while(1)
         {
-                cout<<" \nBINARY TREE OPERATIONS:\n"<<"1. INSERTION:\n 2. DELETION:\n 3. TRAVERSAL:\n 4.Horizontal Traversal:\n";
+                cout<<" \nBINARY TREE OPERATIONS:\n"<<"1. INSERTION:\n 2. DELETION:\n 3. TRAVERSAL:\n 4.Horizontal Traversal:\n 5. Diameter Of Tree:\n";
                 cout<<"\nEnter the choice of operation:\n";
                 cin>>ch;
                 switch(ch)
@@ -216,7 +322,7 @@ int main()
                                         else if(num==3)
                                                         postorder(bt);
                                         break;
-						case 4: cout<<"Diametric Print of a Tree:\n";
+						case 4: cout<<"Error Diametric Print of a Tree:\n";
 								min=get_min_width(bt);
 								max=get_max_width(bt);
 								cout<<"MIN: "<<min<<"\tMAX: "<<max<<endl;
@@ -225,8 +331,11 @@ int main()
 									cout<<"\n";
 								}
 								break;
+						case 5:	cout << "Diameter Of a Tree:\n";
+								diameter_traverse(bt);
+								break;
                         default:
-							break;
+							return 0;;
                 }
         }
         return 0;

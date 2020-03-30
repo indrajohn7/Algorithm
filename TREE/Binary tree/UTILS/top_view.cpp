@@ -231,6 +231,182 @@ void spiral_taverse(btreenode* root)
 	cout << endl;
 }
 
+void topview_traverse(btreenode* root)
+{
+	btreenode *left, *right;
+	cout << root->data << " ";
+	left = root->lchild;
+	right = root->rchild;
+
+	while (left || right) {
+		if (left) {
+			cout << left->data << " ";
+			left = left->lchild;
+		}
+		if (right) {
+			cout << right->data << " ";
+			right = right->rchild;
+		}
+	}
+
+	cout << endl;
+}
+
+void top_view_traverse(btreenode* root)
+{
+	typedef pair<int, int> pii;
+	typedef pair<btreenode*, pii> pbt;
+	//pair<btrenode*, pair<level, width>>	object for each node element
+
+	stack<pbt> st_lchild, st_rchild;
+	int level, width;
+	level = 1;
+	width = 0;
+	pii p = make_pair(level, width);
+	pbt pb = make_pair(root, p);
+	st_lchild.push(pb);
+	bool lchild, rchild;
+	lchild = true;
+	rchild = false;
+	int min_width, max_width, max_level, max_diff;
+	min_width = INT_MAX;
+	max_width = max_diff = INT_MIN;
+	max_level = level;
+	stack<pbt> st;
+	stack<btreenode*> top_view;
+	top_view.push(root);
+	btreenode *max_view, *min_view;
+	max_view = min_view = NULL;
+	int view_min, view_max;
+	view_min = view_max = 0;
+	bool right_view, left_view;
+	right_view = left_view = false;
+
+	while(st_lchild.empty() == false || st_rchild.empty() == false) {
+		
+		if (lchild && st_lchild.empty() == false) {
+			btreenode* elem = st_lchild.top().first;
+			width = st_lchild.top().second.second;
+			st_lchild.pop();
+			cout << elem->data << " ";
+			if (elem->rchild) {
+				
+				st_rchild.push(make_pair(elem->rchild, make_pair(level, width + 1)));
+				if (width + 1 > max_width) {
+					max_width = width + 1;
+				}
+				if (width + 1 > view_max) {
+					view_max = width + 1; 
+					max_view = elem->rchild;
+					right_view = true;
+				}
+			}
+			if (elem->lchild) {
+				st_rchild.push(make_pair(elem->lchild, make_pair(level, width - 1)));
+				if (width - 1 < min_width) {
+					min_width = width - 1;
+				}
+				if (width - 1 < view_min) {
+					view_min = width - 1;
+					min_view = elem->lchild;
+					left_view = true;
+				}
+			}
+			if (st_lchild.empty()) {
+				if (st.empty()) {
+					st = st_rchild;
+					max_level = level;
+					max_diff = max_width - min_width;
+				} else if (max_diff < (max_width - min_width)){
+					st = st_rchild;
+					max_level = level;
+					max_diff = (max_width - min_width);
+				}
+				level += 1;
+				lchild = false;
+				rchild = true;
+				min_width = INT_MAX;
+				max_width = INT_MIN;
+				if (min_view) {
+					top_view.push(min_view);
+				}
+				if (max_view) {
+					top_view.push(max_view);
+				}
+				max_view = min_view = NULL;
+			}
+		} else if (rchild && st_rchild.empty() == false) {
+			
+			btreenode* elem = st_rchild.top().first;
+			width = st_rchild.top().second.second;
+			st_rchild.pop();
+			cout << elem->data << " ";
+			if (elem->lchild) {
+				st_lchild.push(make_pair(elem->lchild, make_pair(level, width - 1)));
+				if (width - 1 < min_width) {
+					min_width = width - 1;
+				}
+				if (width - 1 < view_min) {
+					view_min = width - 1;
+					min_view = elem->lchild;
+					left_view = true;
+				}
+			}
+			if (elem->rchild) {
+				st_lchild.push(make_pair(elem->rchild, make_pair(level, width + 1)));
+				if (width + 1 > max_width) {
+					max_width = width + 1;
+				}
+				if (width + 1 > view_max) {
+					view_max = width + 1; 
+					max_view = elem->rchild;
+					right_view = true;
+				}
+			}
+			if (st_rchild.empty()) {
+				if (st.empty()) {
+					st = st_lchild;
+					max_level = level;
+					max_diff = (max_width - min_width);
+				} else if (max_diff < (max_width - min_width)){
+					st = st_lchild;
+					max_level = level;
+					max_diff = (max_width - min_width);
+				}
+				level += 1;
+				rchild = false;
+				lchild = true;
+				min_width = INT_MAX;
+				max_width = INT_MIN;
+				if (min_view) {
+					top_view.push(min_view);
+				}
+				if (max_view) {
+					top_view.push(max_view);
+				}
+				max_view = min_view = NULL;
+			}
+		}
+	}
+	cout << endl;
+
+	cout << "Diameter at level: " << max_level << " with a length: " << max_diff << " With number of #" << st.size() << " elements" << endl;
+	while (st.empty() == false) {
+		cout << st.top().first->data << " ";
+		st.pop();
+	}
+	cout << endl;
+
+	cout << "TopView of the Tree: " << endl;
+	while (top_view.empty() == false) {
+		cout << top_view.top()->data << " ";
+		top_view.pop();
+	}
+
+	cout << endl;
+
+}
+
 
 int main()
 {
@@ -241,7 +417,7 @@ int main()
         fflush(stdin);
         while(1)
         {
-        	cout<<" \nBINARY TREE OPERATIONS:\n"<<" 1. INSERTION:\n 2. DELETION:\n 3. TRAVERSAL:\n 4.Height Traversal Print:\n 5.Spiral traversal:\n";
+        	cout<<" \nBINARY TREE OPERATIONS:\n"<<" 1. INSERTION:\n 2. DELETION:\n 3. TRAVERSAL:\n 4.Height Traversal Print:\n 5.Spiral traversal:\n 6. Top View\n";
             cout<<"\nEnter the choice of operation:\n";
             cin>>ch;
             switch(ch)
@@ -273,6 +449,9 @@ int main()
                             break;
 					case 5:	cout << "Spiral print of the Tree:\n";
 							spiral_taverse(bt);
+							break;
+					case 6:	cout << "Top view print of the Tree:\n";
+							top_view_traverse(bt);
 							break;
                     default:
                            	return 0;
